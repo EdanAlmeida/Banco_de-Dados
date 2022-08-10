@@ -1,0 +1,113 @@
+/*REVISÃO 07/07/2022*/
+
+/*PONTEIRAMENTO*/
+
+SELECT C.NOME, C.CPF, E.CIDADE, T.TELEFONE
+FROM CLIENTE C
+    INNER JOIN ENDERECO E
+    ON C.IDCLIENTE = E.ID_CLIENTE
+    INNER JOIN TELEFONE T
+    ON C.IDECLIENTE = T.ID_CLIENTE
+    WHERE SEXO = 'F';
+
+
+
+/*SUBQUERY*/
+
+SELECT C.IDCLIENTE, C.EMAIL, C.NOME, C.SEXO, T.TIPO, E.BAIRRO, E.CIDADE
+FROM CLIENTE C
+INNER JOIN ENDERECO E
+ON C.IDCLIENTE = E.ID_CLIENTE
+INNER JOIN TELEFONE T
+ON C.IDCLIENTE = T.ID_CLIENTE
+WHERE SEXO = 'F'
+AND BAIRRO = 'CENTRO' AND CIDADE = 'RIO DE JANEIRO'
+AND (TIPO = 'RES' TIPO = 'COM');
+
+
+
+
+/*PROCEDURES*/
+
+CREATE DATABASE CURSOS;
+USE CURSOS;
+CREATE TABLE CURSOS(
+	IDCURSO INT PRIMARY KEY AUTO_INCREMENT,
+	NOME VARCHAR(30) NOT NULL,
+	HORAS INT(3) NOT NULL,
+	VALOR FLOAT(10,2) NOT NULL
+);
+
+INSERT INTO CURSOS VALUES(NULL, 'JAVA', 30, 500.00);
+INSERT INTO CURSOS VALUES(NULL, 'FUNDAMENTOS DE BANCOS DE DADOS', 40, 700.00);
+
+DELIMITER $
+STATUS
+
+
+CREATE PROCEDURE CAD_CURSO(P_NOME VARCHAR(30),
+                           P_HORAS INT(3),
+                           P_PRECO FLOAT(10,2))
+BEGIN
+	
+	INSERT INTO CURSOS VALUES(NULL, P_NOME, P_HORAS, P_PRECO);
+
+END
+$
+
+DELIMITER ;
+
+
+
+CALL CAD_CURSO('BI SQL SERVER', 60, 1200.00);
+CALL CAD_CURSO('HTML, CSS E JS', 40, 650.00);
+
+CALL CAD_CURSO('PROGRAMACAO EM C', 60, 580.00);
+
+
+/*DATABASE AULA*/
++-----------+--------------+------+-----+---------+----------------+
+| Field     | Type         | Null | Key | Default | Extra          |
++-----------+--------------+------+-----+---------+----------------+
+| IDUSUARIO | int(11)      | NO   | PRI | NULL    | auto_increment |
+| NOME      | varchar(30)  | YES  |     | NULL    |                |
+| LOGIN     | varchar(30)  | YES  |     | NULL    |                |
+| SENHA     | varchar(100) | YES  |     | NULL    |                |
++-----------+--------------+------+-----+---------+----------------+
+
+DELIMITER $
+
+CREATE PROCEDURE REP_USUARIO(P_NOME VARCHAR(30),
+                             P_LOGIN VARCHAR(30),
+                             P_SENHA VARCHAR(100))
+BEGIN
+	INSERT INTO USUARIO VALUES(NULL, P_NOME, P_LOGIN, P_SENHA);
+END
+$
+
+DELIMITER ;
+
+CALL REP_USUARIO('EDAN', 'EDANALMEIDA', '12345678');
+
+
+
+DELIMITER $
+
+CREATE PROCEDURE CONSULTA_USUARIOS()
+BEGIN
+
+	SELECT * FROM USUARIO;
+
+END
+$
+
+DELIMITER ;
+CALL CONSULTA_USUARIOS;
+
+
+
+
+/*FUNCOES*/
+
+
+

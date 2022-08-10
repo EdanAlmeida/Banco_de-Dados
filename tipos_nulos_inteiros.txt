@@ -1,0 +1,7 @@
+CLASS TIPOS NULOS E INTEIROS
+
+- A junção de todas as colunas formando uma linha é chamado de 'REGISTRO' ou 'TUPLA'.
+- cada célula é um campo;
+
+- desc == describe;
+

@@ -1,0 +1,61 @@
+MODELAGEM LÓGICA E FÍSICA: (Modelagem conceitual e lógica)
+
+- Como se decide construir um banco em uma empresa?
+	- Empresa (usuários = ecommerce);
+	- Organização;
+	- Cadastro de clientes = não tem acesso ao sistema principal da loja;
+	- Software de prateleira == prontos <> não atendem a necessidade específica;
+	- Modelar um sistema == banco de dados;
+	- Modelar Banco de dados para o sistema;
+- Um banco de dados armazena dados para trazer informação;
+
+1 - Requisitos = Documento de requisitos == necessidades para o software (nome, telefone, cpf, etc.);
+2 - Saber a plataforma que será construída (por causa da sintaxe);
+3 - Escopo == começa e termina o projeto;
+4 - Interpretar documentos e requisitos;
+
+
+- MODELAGEM CONCEITUAL = RASCUNHO
+- MODELAGEM LÓGICA = QUALQUER PROGRAMA DE MODELAGEM (BR MODELO)
+- MODELAGEM FÍSICA = SCRIPTS DE BANCO
+
+- BANCO DE DADOS : dentro dele há várias tabelas que contém dados; 
+- SGBD = Sistema de gerenciamento de banco de dados - dentro dele há vários bancos; (ele têm vários bancos pq precisa para funcionar);
+
+- My sql senha = 1234
+
+; == limitador (muito importante!)
+
+TUNNING = tuna o banco de dados para ele ser mais rápido.
+	- AD = dados;
+	- DBA = infraestrutura;
+	- Tunning = performance do banco;
+	- BI = o que ocorreu no passado;
+	- Data Science = o que pode ocorrer no futuro;
+	- MD (mineração de dados) = ligada a data science;
+	
+	- Todas seguem uma linha do tempo;
+
+COMPARANDO CHAR E VARCHAR = 
+- Tipagem de tabelas de Bancos de Dados;
+	- CHAR E VARCHAR =  caracteres        <> INT E FLOAT = números
+	- BLOB = documentos e fotos
+	- TEXT = textos extensos
+
+- cada caracter = 1 byte. 
+
+	CHAR <> VARCHAR:
+		- CHAR = não varia, então usa o espaço pre-determinado; (mais dados trafegando na rede) - numero de caracteres constante.
+		- VARCHAR = variable, então usa o espaço necessário, o que torna o banco mais eficiente.
+
+
+
+enum = enumeração (conjunto fizos de dados)
+	- combox para evitar dados do mesmo tipo, mas digitados diferentes (M/F; Masc/Fem; Masculino/FEminino);
+	- Enum está presente no MySql, outros bancos usam a 'constraint de check'.
+
+
+
+FLOAT / INT:
+	- float = ponto flutuante;
+	- int = máximo de 11 digitos; (CPF cadastrado como VARCHAR);

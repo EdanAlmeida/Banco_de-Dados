@@ -1,0 +1,18 @@
+ARQUITETURA DE SOFTWARE
+
+- Primordial do banco de dados.
+	- sistema (ex: usuário e senha);
+	- o sistema requisita ao banco de dados (tabelas == usuário e senha);
+	- Retorno ao software com a permissão ou não;
+
+	- Banco de dados == armazena informações de um sistema;
+	- Banco de dados gerenciar os dados;
+	- front end == mostrar os dados de forma amigável ao usuário;
+
+
+ - Arquitetura de software (padrão MVC)
+	- tres camadas:
+		- Model = Classes modelo = classes simples que representam objetos (pessoa, carro, cliente, etc). Representadas por tabelas nos bancos de dados.
+		- View = o que o usuário vê, as telas do sistema (Html, jQuery, Css, JS);
+		- COntroler = Regra do negócio (processamento do sistema) (Java, PHP, Python, Ruby, C#, etc.)
+

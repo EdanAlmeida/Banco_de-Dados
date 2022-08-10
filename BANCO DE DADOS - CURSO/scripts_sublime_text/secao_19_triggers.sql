@@ -1,0 +1,418 @@
+/*AUTOMATIZANDO AS COISAS - TRIGGERS
+	- GATILHOS
+*/
+
+
+DELIMITER $
+
+CREATE TRIGGER NOME
+BEFORE/AFTER INSERT/DELETE/UPDATE ON TABELA
+FOR EACH ROW
+BEGIN
+	COMANDO;
+END$
+
+
+/*NO LINUX, O MYSQL É SENSITIVE.
+
+	- JÁ NO WINDOWS, O MYSQL NÃO É SENSITIVE.
+*/
+
+
+SHOW DATABASES;
+USE INFORMATION_SCHEMA;
+DESC TRIGGERS;
+
+
+
+
+
+
+
+/*
+Empate
+5 x 5,75 = 28,75		(100 x 5,75 = 575)
+
+
+Vitória do Plameiras
+22,46 x 1,28 = 28,74	(449,2 X 1,28 = 574,97)
+
+27,46
+
+28,75 - 27,46 = 1,29 
+
+
+Derrota do Palmeiras
+3,03 x 9,50 = 28,78		(60,60 x 9,5 = 575,70)
+
+
+soma das apostas == 100 + 449,2 + 60, 60 [R$ 609,80]
+
+Lucro = 25,77
+*/
+
+---------------------------------------------------------------------------------------------------------------------
+
+/*TRIGGERS NA PRÁTICA*/
+CREATE DATABASE AULA;
+USE AULA;
+
+CREATE TABLE USUARIO(
+	IDUSUARIO INT PRIMARY KEY AUTO_INCREMENT,
+	NOME VARCHAR(30),
+	LOGIN VARCHAR(30),
+	SENHA VARCHAR(100)
+);
+
+
+CREATE TABLE BKP_USUARIO(
+	IDBACKUP INT PRIMARY KEY AUTO_INCREMENT,
+	IDUSUARIO INT,
+	NOME VARCHAR(30),
+	LOGIN VARCHAR(30)
+);
+
+
+/*CRIANDO A TRIGGER*/
+
+DELIMITER $
+
+CREATE TRIGGER BACKUP_USER
+BEFORE DELETE ON USUARIO
+FOR EACH ROW
+BEGIN
+	INSERT INTO BKP_USUARIO VALUES
+	(NULL, OLD.IDUSUARIO, OLD.NOME, OLD.LOGIN);
+END
+$
+
+
+INSERT INTO USUARIO VALUES(NULL, 'EDAN', 'EDANALMEIDA', '1234')$
+INSERT INTO USUARIO VALUES(NULL, 'LICE', 'LICE1994', '5678')$
+
+DELIMITER ;
+
+DELETE FROM USUARIO WHERE IDUSUARIO = 1;
+
+SELECT * FROM BKP_USUARIO;
+
+
+
+--------------------------------------------------------------------------------------------------------
+
+/*TRIGGERS PARA BANCOS DE DADOS DE BACKUP*/
+
+/*BACKUP LÓGICO -> EM TABELAS;
+  BACKUP FÍSICO -> EM FITAS/DVD/DRIVES DE REDE/OUTROS SERVIDORES;
+*/
+
+CREATE DATABASE LOJA;
+
+USE LOJA;
+
+CREATE TABLE PRODUTO(
+	IDPRODUTO INT PRIMARY KEY AUTO_INCREMENT,
+	NOME VARCHAR(30),
+	VALOR FLOAT(10,2)
+);
+
++-----------+-------------+------+-----+---------+----------------+
+| Field     | Type        | Null | Key | Default | Extra          |
++-----------+-------------+------+-----+---------+----------------+
+| IDPRODUTO | int(11)     | NO   | PRI | NULL    | auto_increment |
+| NOME      | varchar(30) | YES  |     | NULL    |                |
+| VALOR     | float(10,2) | YES  |     | NULL    |                |
++-----------+-------------+------+-----+---------+----------------+
+
+
+
+CREATE DATABASE BACKUP_LOJA;
+
+USE BACKUP_LOJA;
+
+CREATE TABLE BKP_PRODUTO(
+	IDBKP INT PRIMARY KEY AUTO_INCREMENT,
+	IDPRODUTO INT,
+	NOME VARCHAR(30),
+	VALOR FLOAT(10,2)
+);
+
++-----------+-------------+------+-----+---------+----------------+
+| Field     | Type        | Null | Key | Default | Extra          |
++-----------+-------------+------+-----+---------+----------------+
+| IDBKP     | int(11)     | NO   | PRI | NULL    | auto_increment |
+| IDPRODUTO | int(11)     | YES  |     | NULL    |                |
+| NOME      | varchar(30) | YES  |     | NULL    |                |
+| VALOR     | float(10,2) | YES  |     | NULL    |                |
++-----------+-------------+------+-----+---------+----------------+
+
+
+
+USE LOJA;
+
+INSERT INTO BKP_PRODUTO VALUES(NULL,1000,'TESTE',0.0); /*ERRO - TABELA NÃO EXISTE NO BANCO*/
+
+INSERT INTO BACKUP_LOJA.BKP_PRODUTO VALUES(NULL,1000,'TESTE',0.0);
+
+
+DELIMITER $
+
+CREATE TRIGGER BKP_PRODUTO
+BEFORE INSERT ON PRODUTO
+FOR EACH ROW
+BEGIN
+
+	INSERT INTO BACKUP_LOJA.BKP_PRODUTO VALUES(NULL,NEW.IDPRODUTO,
+											   NEW.NOME,NEW.VALOR);
+
+END
+$
+
+DELIMITER ;
+
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO MODELAGEM',50.00);
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO BI',80.00);
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO JAVA',90.00);
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO PYTHON',100.00);
+
+
+SELECT * FROM BACKUP_LOJA.BKP_PRODUTO;
+
+
+
+DELIMITER $
+
+CREATE TRIGGER BKP_PRODUTO_DEL
+BEFORE DELETE ON PRODUTO
+FOR EACH ROW
+BEGIN
+
+	INSERT INTO BACKUP_LOJA.BKP_PRODUTO_DEL VALUES(NULL,OLD.IDPRODUTO,
+											   OLD.NOME,OLD.VALOR);
+
+END
+$
+
+DELIMITER ;
+
+
+DELETE FROM PRODUTO WHERE IDPRODUTO = 2;
+
+SELECT * FROM BACKUP_LOJA.BKP_PRODUTO;
+
+
+SELECT * FROM BACKUP_LOJA.BKP_PRODUTO;
+
+
++-------+-----------+-----------------+--------+
+| IDBKP | IDPRODUTO | NOME            | VALOR  |
++-------+-----------+-----------------+--------+
+|     1 |      1000 | TESTE           |   0.00 |
+|     2 |         0 | LIVRO MODELAGEM |  50.00 |
+|     3 |         0 | LIVRO BI        |  80.00 |
+|     4 |         0 | LIVRO JAVA      |  90.00 |
+|     5 |         0 | LIVRO PYTHON    | 100.00 |
+|     6 |         2 | LIVRO BI        |  80.00 |
+|     7 |         0 | LIVRO BI        |  80.00 |
++-------+-----------+-----------------+--------+
+
+/*NA COLUNA IDPRODUTO O DADO É PEGO ANTES DE SER GRAVADO NO BANCO, POR ISSO FIZA COM 0;
+
+	- QUANDO USA 'OLD' O DADO JÁ ESTÁ GRAVADO NA TABELA;
+*/
+
+
+
+/*REFATORANDO A TRIGGER*/
+
+DROP TRIGGER BKP_PRODUTO;
+DROP TABLE BACKUP_LOJA.BKP_PRODUTO;
+DROP TABLE PRODUTO;
+
+CREATE TABLE PRODUTO(
+	IDPRODUTO INT PRIMARY KEY AUTO_INCREMENT,
+	NOME VARCHAR(30),
+	VALOR FLOAT(10,2)
+);
+
+
+CREATE TABLE BKP_PRODUTO(
+	IDBKP INT PRIMARY KEY AUTO_INCREMENT,
+	IDPRODUTO INT,
+	NOME VARCHAR(30),
+	VALOR FLOAT(10,2)
+);
+
+
+DELIMITER $
+
+CREATE TRIGGER BKP_PRODUTO
+AFTER INSERT ON PRODUTO
+FOR EACH ROW
+BEGIN
+
+	INSERT INTO BACKUP_LOJA.BKP_PRODUTO VALUES(NULL,NEW.IDPRODUTO,
+											   NEW.NOME,NEW.VALOR);
+
+END
+$
+
+DELIMITER ;
+
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO MODELAGEM',50.00);
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO BI',80.00);
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO JAVA',90.00);
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO PYTHON',100.00);
+
++-----------+-----------------+--------+
+| IDPRODUTO | NOME            | VALOR  |
++-----------+-----------------+--------+
+|         1 | LIVRO MODELAGEM |  50.00 |
+|         2 | LIVRO BI        |  80.00 |
+|         3 | LIVRO JAVA      |  90.00 |
+|         4 | LIVRO PYTHON    | 100.00 |
++-----------+-----------------+--------+
+
+SELECT * FROM BACKUP_LOJA.BKP_PRODUTO;
+
+
+
+---------------------------------------------------------------------------------------------------------------
+
+/*AFTER/BEFORE/INSERT/DELETE/UPDATE -> EVENTOS DE UMA TRIGGER.*/
+
+ALTER TABLE BACKUP_LOJA.BKP_PRODUTO 
+ADD EVENTO CHAR(1);
+
+SELECT * FROM BACKUP_LOJA.BKP_PRODUTO;
+
+DROP TRIGGER BKP_PRODUTO;
+
+DELIMITER $
+
+CREATE TRIGGER BKP_PRODUTO
+AFTER INSERT ON PRODUTO
+FOR EACH ROW
+BEGIN
+
+	INSERT INTO BACKUP_LOJA.BKP_PRODUTO VALUES(NULL,NEW.IDPRODUTO,
+											   NEW.NOME,NEW.VALOR, 'D');
+
+END
+$
+
+DELIMITER ;
+
+
+
+
+DELIMITER $
+
+CREATE TRIGGER BKP_PRODUTO
+AFTER INSERT ON PRODUTO
+FOR EACH ROW
+BEGIN
+
+	INSERT INTO BACKUP_LOJA.BKP_PRODUTO VALUES(NULL,NEW.IDPRODUTO,
+											   NEW.NOME,NEW.VALOR);
+
+END
+$
+
+DELIMITER ;
+
+
+
+---------------------------------------------------------------------------------------------------------------
+
+/*AUDITANDO UMA TABELA COM TRIGGER*/
+
+DROP DATABASE LOJA;
+
+DROP DATABASE BACKUP_LOJA;
+
+
+
+CREATE DATABASE LOJA;
+
+USE LOJA;
+
+
+CREATE TABLE PRODUTO(
+	IDPRODUTO INT PRIMARY KEY AUTO_INCREMENT,
+	NOME VARCHAR(30),
+	VALOR FLOAT(10,2)
+);
+
+
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO MODELAGEM',50.00);
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO BI',80.00);
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO JAVA',90.00);
+INSERT INTO PRODUTO VALUES(NULL,'LIVRO PYTHON',100.00);
+
+
+
+SELECT NOW();
+SELECT CURRENT_USER(); 
+
+
+CREATE DATABASE BACKUP_LOJA;
+
+USE BACKUP_LOJA;
+
+CREATE TABLE BKP_PRODUTO(
+	IDBACKUP INT PRIMARY KEY AUTO_INCREMENT,
+	IDPRODUTO INT,
+	NOME VARCHAR(30),
+	VALOR_ORIGINAL FLOAT(10,2),
+	VALOR_ALTERADO FLOAT(10,2),
+	DATA DATETIME,
+	USUARIO VARCHAR(30),
+	EVENTO CHAR(1)
+);
+
+
+DELIMITER $
+
+CREATE TRIGGER AUDIT_PROD
+AFTER UPDATE ON PRODUTO
+FOR EACH ROW
+BEGIN
+
+    INSERT INTO BACKUP_LOJA.BKP_PRODUTO VALUES(NULL,OLD.IDPRODUTO,OLD.NOME,
+    OLD.VALOR,NEW.VALOR,NOW(),CURRENT_USER(),'U');
+
+END
+$
+
+DELIMITER ;
+
+
++-----------+-----------------+--------+
+| IDPRODUTO | NOME            | VALOR  |
++-----------+-----------------+--------+
+|         1 | LIVRO MODELAGEM |  50.00 |
+|         2 | LIVRO BI        |  80.00 |
+|         3 | LIVRO JAVA      |  90.00 |
+|         4 | LIVRO PYTHON    | 100.00 |
++-----------+-----------------+--------+
+
+
+UPDATE PRODUTO SET VALOR = 110.00
+WHERE IDPRODUTO = 4;
+
+
++-----------+-----------------+--------+
+| IDPRODUTO | NOME            | VALOR  |
++-----------+-----------------+--------+
+|         1 | LIVRO MODELAGEM |  50.00 |
+|         2 | LIVRO BI        |  80.00 |
+|         3 | LIVRO JAVA      |  90.00 |
+|         4 | LIVRO PYTHON    | 110.00 |
++-----------+-----------------+--------+
+
+
+SELECT * FROM BACKUP_LOJA.BKP_PRODUTO;
+
+
+
